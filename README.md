@@ -1,6 +1,6 @@
 # 🏪 Mirror Marketplace
 
-**Built by [@yksanjo](https://github.com/yksanjo) — ex-Atlantic Records, ex-Warner Music**
+**Built by [@yksanjo](https://github.com/yksanjo)**
 
 A system where your wallet, activity log, and marketplace experience all merge into a single real-time ecosystem connecting **identity, transactions, memory, and opportunities**.
 
