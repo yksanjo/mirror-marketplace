@@ -1,0 +1,28 @@
+# Mirror Marketplace — add to /etc/caddy/Caddyfile
+# Cloudflare Tunnel → http://localhost:8084
+
+:8084 {
+    encode zstd gzip
+
+    reverse_proxy 127.0.0.1:3033 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        -Server
+    }
+
+    log {
+        output file /var/log/caddy/mirror-marketplace.log {
+            roll_size 10mb
+            roll_keep 3
+        }
+        format console
+    }
+}
