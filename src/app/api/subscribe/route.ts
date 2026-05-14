@@ -12,7 +12,11 @@ export async function POST(req: Request) {
       );
     }
 
-    const subscription = subscribe(subscriberWallet, creatorWallet, tier);
+    const subscription = await subscribe(
+      subscriberWallet,
+      creatorWallet,
+      tier
+    );
     return NextResponse.json({ subscription });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Subscription failed";

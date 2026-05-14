@@ -33,4 +33,30 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  isolation: isolate;
+}
+
+.floating-pump-logos {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: -1;
+}
+.floating-pump-logos > img {
+  position: absolute;
+  opacity: 0.22;
+  animation-name: pump-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: transform;
+  filter: drop-shadow(0 0 36px rgba(16, 185, 129, 0.45));
+}
+@keyframes pump-drift {
+  0%   { transform: translate(0, 0) rotate(var(--r0, 0deg)); }
+  50%  { transform: translate(var(--tx, 0), var(--ty, 0)) rotate(var(--r1, 0deg)); }
+  100% { transform: translate(0, 0) rotate(var(--r0, 0deg)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .floating-pump-logos > img { animation: none; }
 }
