@@ -1,7 +1,7 @@
 {
   "name": "mirror-marketplace",
   "version": "1.0.0",
-  "description": "🏪 Subscribe to top Solana traders' AI-generated trade theses. Built by @yksanjo — ex-Atlantic Records, ex-Warner Music.",
+  "description": "🏪 Subscribe to top Solana traders' AI-generated trade theses. Built by @yksanjo.",
   "private": true,
   "scripts": {
     "dev": "next dev",

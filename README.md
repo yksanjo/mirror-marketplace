@@ -47,4 +47,4 @@ npm start
 
 ---
 
-*Built by [Yoshi Kondo](https://linkedin.com/in/yoshi-kondo-3110462a9/) · [@yksanjo](https://github.com/yksanjo)*
+*Built by [@yksanjo](https://github.com/yksanjo)*
