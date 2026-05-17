@@ -38,6 +38,7 @@ export interface Subscription {
   active: boolean;
   startDate: number;
   endDate: number;
+  paymentSignature?: string;
 }
 
 export interface MarketplaceStats {

@@ -1,5 +1,18 @@
-import { loadListings, saveListings, loadSubs, saveSubs } from "./db";
+import {
+  loadListings,
+  saveListings,
+  loadSubs,
+  saveSubs,
+  loadUsedSignatures,
+  markSignatureUsed,
+} from "./db";
 import { getDeployerRep } from "./deployerRep";
+import {
+  verifyPayment,
+  verifyListingProof,
+  isValidPubkey,
+  type ListingProofArgs,
+} from "./solana";
 import type {
   MarketplaceStats,
   MirrorListing,
@@ -96,9 +109,22 @@ export async function getStats(): Promise<MarketplaceStats> {
   };
 }
 
+export interface AddListingInput extends MirrorListing {
+  proof: ListingProofArgs;
+}
+
 export async function addListing(
-  listing: MirrorListing
+  input: AddListingInput
 ): Promise<MirrorListing> {
+  const { proof, ...listing } = input;
+  if (!isValidPubkey(listing.wallet)) {
+    throw new Error("listing.wallet must be a valid Solana public key");
+  }
+  if (proof.wallet !== listing.wallet) {
+    throw new Error("Listing proof wallet must match listing.wallet");
+  }
+  verifyListingProof(proof);
+
   const map = await loadListings();
   map.set(listing.id, listing);
   await saveListings();
@@ -108,8 +134,41 @@ export async function addListing(
 export async function subscribe(
   subscriberWallet: string,
   creatorWallet: string,
-  tier: string
+  tier: string,
+  paymentSignature?: string
 ): Promise<Subscription> {
+  if (!isValidPubkey(subscriberWallet)) {
+    throw new Error("subscriberWallet must be a valid Solana public key");
+  }
+  if (!isValidPubkey(creatorWallet)) {
+    throw new Error("creatorWallet must be a valid Solana public key");
+  }
+
+  const listings = await loadListings();
+  const listing = Array.from(listings.values()).find(
+    (l) => l.wallet === creatorWallet
+  );
+  if (!listing) throw new Error("Creator wallet has no listing");
+  const tierConfig = listing.tiers.find((t) => t.tier === tier);
+  if (!tierConfig) throw new Error(`Tier "${tier}" not offered by this creator`);
+
+  if (tierConfig.priceSol > 0) {
+    if (!paymentSignature) {
+      throw new Error("paymentSignature is required for paid tiers");
+    }
+    const usedSigs = await loadUsedSignatures();
+    if (usedSigs.has(paymentSignature)) {
+      throw new Error("This payment signature has already been used");
+    }
+    await verifyPayment({
+      signature: paymentSignature,
+      subscriberWallet,
+      creatorWallet,
+      priceSol: tierConfig.priceSol,
+    });
+    await markSignatureUsed(paymentSignature);
+  }
+
   const sub: Subscription = {
     id: `sub_${subscriberWallet}_${creatorWallet}_${Date.now()}`,
     subscriberWallet,
@@ -118,6 +177,7 @@ export async function subscribe(
     active: true,
     startDate: Date.now(),
     endDate: Date.now() + 30 * 24 * 60 * 60 * 1000,
+    ...(paymentSignature ? { paymentSignature } : {}),
   };
 
   const subs = await loadSubs();
@@ -126,14 +186,8 @@ export async function subscribe(
   subs.set(subscriberWallet, userSubs);
   await saveSubs();
 
-  const listings = await loadListings();
-  for (const listing of listings.values()) {
-    if (listing.wallet === creatorWallet) {
-      listing.stats.followers++;
-      await saveListings();
-      break;
-    }
-  }
+  listing.stats.followers++;
+  await saveListings();
 
   return sub;
 }

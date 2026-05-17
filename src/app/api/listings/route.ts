@@ -17,11 +17,23 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    if (!body || typeof body !== "object") {
+      return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+    }
+    if (!body.proof || typeof body.proof !== "object") {
+      return NextResponse.json(
+        {
+          error:
+            "Listing requires a wallet-ownership proof. Sign the canonical message and include it as `proof`.",
+        },
+        { status: 400 }
+      );
+    }
     const listing = await addListing(body);
     return NextResponse.json({ listing });
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Failed to add listing";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }

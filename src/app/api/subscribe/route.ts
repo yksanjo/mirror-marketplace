@@ -3,7 +3,8 @@ import { subscribe } from "@/lib/marketplace";
 
 export async function POST(req: Request) {
   try {
-    const { subscriberWallet, creatorWallet, tier } = await req.json();
+    const { subscriberWallet, creatorWallet, tier, paymentSignature } =
+      await req.json();
 
     if (!subscriberWallet || !creatorWallet || !tier) {
       return NextResponse.json(
@@ -15,11 +16,12 @@ export async function POST(req: Request) {
     const subscription = await subscribe(
       subscriberWallet,
       creatorWallet,
-      tier
+      tier,
+      typeof paymentSignature === "string" ? paymentSignature : undefined
     );
     return NextResponse.json({ subscription });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Subscription failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }

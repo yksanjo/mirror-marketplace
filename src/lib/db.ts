@@ -6,9 +6,11 @@ const DATA_DIR =
   process.env.MARKETPLACE_DATA_DIR ?? path.join(process.cwd(), "data");
 const LISTINGS_FILE = path.join(DATA_DIR, "listings.json");
 const SUBS_FILE = path.join(DATA_DIR, "subscriptions.json");
+const USED_SIGS_FILE = path.join(DATA_DIR, "used_signatures.json");
 
 let listingsCache: Map<string, MirrorListing> | null = null;
 let subsCache: Map<string, Subscription[]> | null = null;
+let usedSigsCache: Set<string> | null = null;
 
 async function ensureDir(): Promise<void> {
   await fs.mkdir(DATA_DIR, { recursive: true });
@@ -53,4 +55,18 @@ export async function loadSubs(): Promise<Map<string, Subscription[]>> {
 export async function saveSubs(): Promise<void> {
   if (!subsCache) return;
   await writeJson(SUBS_FILE, Object.fromEntries(subsCache));
+}
+
+export async function loadUsedSignatures(): Promise<Set<string>> {
+  if (usedSigsCache) return usedSigsCache;
+  const arr = await readJson<string[]>(USED_SIGS_FILE, []);
+  usedSigsCache = new Set(arr);
+  return usedSigsCache;
+}
+
+export async function markSignatureUsed(signature: string): Promise<void> {
+  const sigs = await loadUsedSignatures();
+  if (sigs.has(signature)) return;
+  sigs.add(signature);
+  await writeJson(USED_SIGS_FILE, Array.from(sigs));
 }
