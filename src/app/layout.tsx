@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import FloatingPumpLogos from "@/components/FloatingPumpLogos";
 import MirrorFamilyNav from "@/components/MirrorFamilyNav";
+import WalletProviders from "@/components/WalletProviders";
+import ConnectButton from "@/components/ConnectButton";
 
 export const metadata: Metadata = {
   title: "Mirror Marketplace — subscribe to top traders",
@@ -17,9 +19,14 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
-        <FloatingPumpLogos />
-        <MirrorFamilyNav current="marketplace" />
-        {children}
+        <WalletProviders>
+          <FloatingPumpLogos />
+          <MirrorFamilyNav current="marketplace" />
+          <div className="w-full flex justify-end px-6 pt-4">
+            <ConnectButton />
+          </div>
+          {children}
+        </WalletProviders>
       </body>
     </html>
   );

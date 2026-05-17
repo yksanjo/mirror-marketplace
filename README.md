@@ -94,9 +94,20 @@ npm run build
 npm start
 ```
 
+## Frontend
+
+The Subscribe button is fully wired:
+1. User clicks **Select Wallet** (top-right) and connects Phantom
+2. Click **Subscribe** on any paid tier
+3. Wallet pops up to sign a single Solana tx with two SystemProgram transfers (creator + fee)
+4. Frontend waits for `confirmed` commitment, then POSTs the signature to `/api/subscribe`
+5. Server re-verifies on-chain, anti-replays, and records the subscription
+
+Free tiers skip the on-chain step entirely.
+
 ## Roadmap
 
-- Wallet-adapter integration on the frontend so the in-app subscribe button builds + signs the dual-transfer tx automatically
+- Add a "List your wallet" form on the frontend that signs the listing-proof message
 - SPL token payment support (currently SOL only)
 - Webhook notifications on subscribe (Discord/Telegram)
 
