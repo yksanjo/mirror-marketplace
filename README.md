@@ -39,8 +39,24 @@ npm run dev
 | `SOLANA_RPC_URL` | recommended | RPC used to fetch subscription payment txs (default: public mainnet) |
 | `PLATFORM_FEE_WALLET` | **required for paid tiers** | Wallet that receives platform fee |
 | `PLATFORM_FEE_BPS` | optional | Basis points; default `500` (5%) |
-| `MARKETPLACE_DATA_DIR` | optional | Where to store JSON state |
+| `MARKETPLACE_DATA_DIR` | optional | Local JSON state dir (when KV unset) |
+| `KV_REST_API_URL` | required on Vercel | Vercel KV / Upstash Redis URL — autoset by Vercel KV integration |
+| `KV_REST_API_TOKEN` | required on Vercel | Vercel KV / Upstash Redis token — autoset by Vercel KV integration |
 | `DEPLOYER_API_URL` | optional | mirror-deployer URL for cross-linking |
+
+## Persistence
+
+The app stores listings, subscriptions, and used payment signatures via a
+small abstraction in `src/lib/db.ts`:
+
+- **Production (Vercel)** — uses Vercel KV (Upstash Redis under the hood) when
+  `KV_REST_API_URL` + `KV_REST_API_TOKEN` are set. Stores:
+  - `marketplace:listings` (Redis Hash keyed by listing id)
+  - `marketplace:subs` (Redis Hash keyed by subscriberWallet)
+  - `marketplace:used_sigs` (Redis Set of payment signatures)
+- **Local dev** — if KV creds are not set, falls back to JSON files in
+  `MARKETPLACE_DATA_DIR` (default `./data`). The same code path runs in both
+  modes; only the storage backend differs.
 
 ## API
 
